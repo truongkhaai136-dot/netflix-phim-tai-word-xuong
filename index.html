@@ -1,1687 +1,399 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phụ đề song ngữ đồng bộ video</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Comfortaa:wght@400;600;700&family=Inter:wght@400;600;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600;700&family=Nunito:wght@400;600;700&family=Playfair+Display:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <style>
-    :root {
-      --blue: #2563eb;
-      --blue-dark: #1d4ed8;
-      --green: #16865b;
-      --violet: #7c3aed;
-      --amber: #b66a00;
-      --danger: #c2413a;
-      --text: #172033;
-      --muted: #60738a;
-      --border: #d8e2ee;
-      --surface: #ffffff;
-      --surface-soft: #f7faff;
-      --page: #edf3f9;
-      --pastel-blue: #dceeff;
-      --pastel-blue-border: #9fc8ef;
-      --highlight-text: #172033;
-      --highlight-shadow: rgba(37, 99, 235, 0.16);
-      --tooltip: #172033;
-      --subtitle-font-family: "Inter", Arial, sans-serif;
-      --subtitle-font-size: 18px;
-      --translation-font-size: 16px;
-    }
-
-    * { box-sizing: border-box; }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      margin: 0;
-      color: var(--text);
-      background: linear-gradient(180deg, #e9f1fa 0, var(--page) 260px, #f5f8fc 100%);
-      font-family: "Inter", Arial, sans-serif;
-    }
-
-    button, input, select { font: inherit; }
-
-    .page-shell {
-      width: min(1180px, calc(100% - 28px));
-      margin: 28px auto 80px;
-    }
-
-    .hero {
-      margin-bottom: 18px;
-      padding: 26px 28px;
-      border: 1px solid rgba(255,255,255,.9);
-      border-radius: 22px;
-      background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(239,247,255,.95));
-      box-shadow: 0 18px 50px rgba(38, 76, 120, .12);
-    }
-
-    h1 {
-      margin: 0 0 8px;
-      font-size: clamp(25px, 4vw, 38px);
-      line-height: 1.15;
-    }
-
-    .hero p {
-      max-width: 850px;
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    .panel {
-      margin-top: 16px;
-      padding: 22px;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      background: rgba(255,255,255,.98);
-      box-shadow: 0 12px 34px rgba(35, 65, 96, .09);
-    }
-
-    .input-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .field-card {
-      min-width: 0;
-      padding: 16px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: var(--surface-soft);
-    }
-
-    .field-card.full { grid-column: 1 / -1; }
-
-    .field-card h2 {
-      margin: 0 0 7px;
-      font-size: 16px;
-    }
-
-    .field-card p {
-      margin: 0 0 12px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    input[type="file"], input[type="url"], input[type="number"], select {
-      width: 100%;
-      min-height: 43px;
-      padding: 9px 11px;
-      border: 1px solid #c6d3e2;
-      border-radius: 10px;
-      color: var(--text);
-      background: #fff;
-    }
-
-    input:focus, select:focus, button:focus-visible {
-      outline: 3px solid rgba(37,99,235,.18);
-      outline-offset: 2px;
-    }
-
-    .file-status {
-      margin-top: 8px;
-      color: #44617c;
-      font-size: 12px;
-      overflow-wrap: anywhere;
-    }
-
-    .settings-grid {
-      display: grid;
-      grid-template-columns: minmax(160px,.7fr) minmax(210px,1fr) minmax(240px,1.4fr) auto;
-      gap: 14px;
-      align-items: end;
-      margin-top: 18px;
-      padding: 16px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: #f8fbff;
-    }
-
-    .setting-field {
-      display: flex;
-      min-width: 0;
-      flex-direction: column;
-      gap: 7px;
-    }
-
-    .setting-field label { font-size: 14px; font-weight: 700; }
-
-    .color-control {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    input[type="color"] {
-      width: 58px;
-      height: 43px;
-      padding: 3px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      background: #fff;
-      cursor: pointer;
-    }
-
-    input[type="range"] { width: 100%; accent-color: var(--blue); }
-
-    .font-size-line {
-      display: grid;
-      grid-template-columns: minmax(110px,1fr) 66px;
-      gap: 9px;
-      align-items: center;
-    }
-
-    #font-size-number { text-align: center; }
-
-    .style-preview {
-      grid-column: 1 / -1;
-      min-height: 42px;
-      padding: 9px 12px;
-      border: 1px solid var(--pastel-blue-border);
-      border-radius: 10px;
-      color: var(--highlight-text);
-      background: var(--pastel-blue);
-      font-family: var(--subtitle-font-family);
-      font-size: var(--subtitle-font-size);
-      line-height: 1.35;
-    }
-
-    .options-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 16px;
-      margin-top: 15px;
-    }
-
-    .check-option {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 650;
-      cursor: pointer;
-    }
-
-    .offset-wrap {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 650;
-    }
-
-    .offset-wrap input { width: 90px; min-height: 37px; }
-
-    .button-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 18px;
-    }
-
-    button {
-      min-height: 44px;
-      border: 0;
-      border-radius: 10px;
-      padding: 11px 16px;
-      color: #fff;
-      background: var(--blue);
-      font-size: 14px;
-      font-weight: 750;
-      cursor: pointer;
-      transition: transform .15s ease, filter .15s ease, opacity .15s ease;
-    }
-
-    button:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(.96); }
-    button:disabled { opacity: .48; cursor: not-allowed; }
-    .btn-green { background: var(--green); }
-    .btn-violet { background: var(--violet); }
-    .btn-amber { background: var(--amber); }
-    .btn-gray { background: #64748b; }
-
-    .status-box {
-      display: none;
-      margin-top: 14px;
-      padding: 12px 14px;
-      border: 1px solid #b9d5ef;
-      border-radius: 11px;
-      color: #234b70;
-      background: #edf7ff;
-      line-height: 1.5;
-    }
-
-    .status-box.show { display: block; }
-    .status-box.error { border-color: #efb9b4; color: #842b24; background: #fff1ef; }
-    .status-box.success { border-color: #a8d8c3; color: #185f43; background: #edfff6; }
-
-    .transcript-head {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .transcript-head h2 { margin: 0; font-size: 20px; }
-    #transcript-summary { color: var(--muted); font-size: 13px; }
-
-    #transcript {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .empty-state {
-      padding: 34px 18px;
-      border: 1px dashed #b9c8d9;
-      border-radius: 14px;
-      color: var(--muted);
-      background: #f8fbff;
-      text-align: center;
-      line-height: 1.6;
-    }
-
-    .cue-row {
-      position: relative;
-      display: grid;
-      grid-template-columns: 82px minmax(0,1fr);
-      gap: 12px;
-      align-items: start;
-      padding: 11px 13px;
-      border: 1px solid #dbe5ef;
-      border-radius: 11px;
-      background: #fff;
-      cursor: pointer;
-      transition: transform .14s ease, background .14s ease, border-color .14s ease, box-shadow .14s ease;
-    }
-
-    .cue-row:hover { border-color: #b8cbe0; background: #f8fbff; transform: translateY(-1px); }
-    .cue-row.active {
-      color: var(--highlight-text);
-      background: var(--pastel-blue);
-      border-color: var(--pastel-blue-border);
-      box-shadow: 0 5px 16px var(--highlight-shadow);
-    }
-
-    .cue-time {
-      color: #52718f;
-      font-size: 12px;
-      font-variant-numeric: tabular-nums;
-      line-height: 1.55;
-      white-space: nowrap;
-    }
-
-    .cue-row.active .cue-time, .cue-row.active .foreign-text { color: var(--highlight-text); }
-
-    .foreign-text {
-      min-width: 0;
-      color: #172033;
-      font-family: var(--subtitle-font-family);
-      font-size: var(--subtitle-font-size);
-      line-height: 1.55;
-      overflow-wrap: anywhere;
-    }
-
-    .translation-inline {
-      display: none;
-      margin-top: 6px;
-      color: #31536f;
-      font-family: var(--subtitle-font-family);
-      font-size: var(--translation-font-size);
-      line-height: 1.5;
-    }
-
-    .translation-tooltip {
-      position: absolute;
-      left: 104px;
-      bottom: calc(100% + 8px);
-      z-index: 50;
-      width: min(560px, calc(100vw - 80px));
-      padding: 11px 13px;
-      border-radius: 10px;
-      color: #fff;
-      background: var(--tooltip);
-      box-shadow: 0 12px 30px rgba(15,23,42,.26);
-      font-family: var(--subtitle-font-family);
-      font-size: var(--translation-font-size);
-      line-height: 1.5;
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transform: translateY(6px);
-      transition: opacity .14s ease, visibility .14s ease, transform .14s ease;
-    }
-
-    .translation-tooltip::after {
-      content: "";
-      position: absolute;
-      top: 100%;
-      left: 24px;
-      border: 7px solid transparent;
-      border-top-color: var(--tooltip);
-    }
-
-    .cue-row:hover .translation-tooltip,
-    .cue-row:focus-visible .translation-tooltip,
-    .cue-row:focus-within .translation-tooltip {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-
-    .no-translation { color: #92a3b5; font-style: italic; }
-
-    #floating-player {
-      position: fixed;
-      right: 22px;
-      bottom: 22px;
-      z-index: 9999;
-      display: none;
-      flex-direction: column;
-      width: 430px;
-      height: 285px;
-      min-width: 300px;
-      min-height: 210px;
-      max-width: calc(100vw - 24px);
-      max-height: calc(100vh - 24px);
-      overflow: hidden;
-      resize: both;
-      border: 1px solid #95a8bc;
-      border-radius: 13px;
-      background: #0f172a;
-      box-shadow: 0 20px 55px rgba(15,23,42,.34);
-    }
-
-    #floating-player.show { display: flex; }
-
-    #drag-handle {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      min-height: 39px;
-      padding: 6px 9px 6px 13px;
-      color: #e7eef8;
-      background: #172033;
-      cursor: move;
-      user-select: none;
-    }
-
-    #player-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 700; }
-
-    #close-player {
-      width: 30px;
-      min-height: 28px;
-      padding: 0;
-      border-radius: 7px;
-      color: #fff;
-      background: rgba(255,255,255,.12);
-      font-size: 16px;
-    }
-
-    #player-container { position: relative; flex: 1; min-height: 0; background: #000; }
-    #youtube-player-shell, #local-video { display: none; width: 100%; height: 100%; }
-    #youtube-player, #youtube-player iframe { width: 100%; height: 100%; }
-    #local-video { object-fit: contain; background: #000; }
-
-    #word-file-input { display: none; }
-
-    @media (max-width: 850px) {
-      .input-grid { grid-template-columns: 1fr; }
-      .field-card.full { grid-column: auto; }
-      .settings-grid { grid-template-columns: 1fr 1fr; }
-      .style-preview { grid-column: 1 / -1; }
-    }
-
-    @media (max-width: 600px) {
-      .page-shell { width: min(100% - 16px, 1180px); margin-top: 10px; }
-      .hero, .panel { padding: 16px; border-radius: 14px; }
-      .settings-grid { grid-template-columns: 1fr; }
-      .style-preview { grid-column: auto; }
-      .cue-row { grid-template-columns: 62px minmax(0,1fr); gap: 8px; padding: 10px; }
-      .translation-tooltip { display: none; }
-      .translation-inline { display: block; }
-      #floating-player { right: 8px; bottom: 8px; width: calc(100vw - 16px); height: 250px; }
-    }
-  </style>
-</head>
-<body>
-  <main class="page-shell">
-    <header class="hero">
-      <h1>Phụ đề song ngữ tự căn chỉnh với video</h1>
-      <p>Nhập phụ đề gốc và tiếng Việt, đồng bộ với video, bấm từng câu để tua lại, xuất script song ngữ dạng Word tối ưu giấy A4 và nhập lại chính file Word đó.</p>
-    </header>
-
-    <section class="panel" aria-label="Nhập dữ liệu">
-      <div class="input-grid">
-        <div class="field-card">
-          <h2>1. Phụ đề ngôn ngữ gốc</h2>
-          <p>Hỗ trợ .vtt, .srt và .txt có timestamp. File gốc cần có thời gian để đồng bộ video.</p>
-          <input id="source-vtt" type="file" accept=".vtt,.srt,.txt,text/plain">
-          <div id="source-file-status" class="file-status">Chưa chọn file.</div>
-        </div>
-
-        <div class="field-card">
-          <h2>2. Phụ đề tiếng Việt</h2>
-          <p>Hỗ trợ .vtt, .srt, .txt có timestamp hoặc TXT thuần văn bản, mỗi câu một dòng.</p>
-          <input id="vi-vtt" type="file" accept=".vtt,.srt,.txt,text/plain">
-          <div id="vi-file-status" class="file-status">Chưa chọn file.</div>
-        </div>
-
-        <div class="field-card">
-          <h2>3. Video trên máy tính</h2>
-          <p>Video chỉ mở trong trình duyệt, không tải lên mạng. MP4 H.264/AAC và WebM thường tương thích tốt nhất.</p>
-          <input id="local-video-file" type="file" accept="video/*">
-          <div id="video-file-status" class="file-status">Chưa chọn video.</div>
-        </div>
-
-        <div class="field-card">
-          <h2>4. Link YouTube — tùy chọn</h2>
-          <p>Dán link đầy đủ, link rút gọn youtu.be hoặc chỉ mã video.</p>
-          <input id="youtube-url" type="url" inputmode="url" placeholder="https://www.youtube.com/watch?v=...">
-        </div>
-
-        <div class="field-card full">
-          <h2>5. Script Word song ngữ</h2>
-          <p>Nút “Tải script Word” tạo bảng DOCX hai cột từ các câu hoàn chỉnh mà ứng dụng đã khôi phục, chỉ giữ hàng có đủ câu gốc và tiếng Việt. Nút “Nhập script Word” đọc lại file DOCX đã xuất, kể cả sau khi bạn chỉnh sửa nội dung trong Word.</p>
-          <div id="word-file-status" class="file-status">Chưa nhập file Word.</div>
-        </div>
-      </div>
-
-      <div class="options-row">
-        <label class="check-option"><input id="auto-scroll" type="checkbox" checked> Tự cuộn đến câu đang phát</label>
-        <label class="check-option"><input id="auto-align" type="checkbox" checked> Tự căn chỉnh thời gian hai file</label>
-        <label class="offset-wrap">Bù bản dịch <input id="manual-offset" type="number" step="0.1" value="0"> giây</label>
-      </div>
-
-      <div class="settings-grid">
-        <div class="setting-field">
-          <label for="highlight-color">Màu highlight</label>
-          <div class="color-control">
-            <input id="highlight-color" type="color" value="#dceeff">
-            <span id="highlight-color-text">#DCEEFF</span>
-          </div>
-        </div>
-
-        <div class="setting-field">
-          <label for="font-size-range">Cỡ chữ phụ đề</label>
-          <div class="font-size-line">
-            <input id="font-size-range" type="range" min="13" max="34" value="18">
-            <input id="font-size-number" type="number" min="13" max="34" value="18">
-          </div>
-        </div>
-
-        <div class="setting-field">
-          <label for="font-family">Phông chữ</label>
-          <select id="font-family">
-            <option value='"Atkinson Hyperlegible", Arial, sans-serif'>AI Sans — dễ đọc</option>
-            <option value='Arial, Helvetica, sans-serif'>Arial</option>
-            <option value='Tahoma, Geneva, sans-serif'>Tahoma</option>
-            <option value='"Roboto", Arial, sans-serif'>Roboto</option>
-            <option value='"Inter", Arial, sans-serif' selected>Inter</option>
-            <option value='"Montserrat", Arial, sans-serif'>Montserrat</option>
-            <option value='"Merriweather", Georgia, serif'>Merriweather</option>
-            <option value='"Playfair Display", Georgia, serif'>Playfair Display</option>
-            <option value='"Comfortaa", sans-serif'>Comfortaa</option>
-            <option value='"Nunito", sans-serif'>Nunito</option>
-          </select>
-        </div>
-
-        <button type="button" id="reset-style-button" class="btn-gray">Đặt lại</button>
-
-        <div id="style-preview" class="style-preview">Đây là câu phụ đề mẫu đang được highlight.</div>
-      </div>
-
-      <div class="button-row">
-        <button type="button" id="process-button">Xử lý phụ đề</button>
-        <button type="button" id="open-local-button" class="btn-green">Mở video trên máy</button>
-        <button type="button" id="open-youtube-button" class="btn-violet">Mở YouTube</button>
-        <button type="button" id="download-word-button" class="btn-amber" disabled>Tải script Word</button>
-        <button type="button" id="import-word-button" class="btn-gray">Nhập script Word</button>
-        <input id="word-file-input" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
-      </div>
-
-      <div id="status-box" class="status-box" role="status" aria-live="polite"></div>
-    </section>
-
-    <section class="panel" aria-label="Danh sách phụ đề">
-      <div class="transcript-head">
-        <h2>Script phụ đề</h2>
-        <div id="transcript-summary">Chưa có dữ liệu.</div>
-      </div>
-      <div id="transcript">
-        <div class="empty-state">Chọn hai file phụ đề rồi bấm <strong>Xử lý phụ đề</strong>, hoặc nhập lại file Word đã xuất.</div>
-      </div>
-    </section>
-  </main>
-
-  <aside id="floating-player" aria-label="Trình phát video nổi">
-    <div id="drag-handle">
-      <span id="player-title">Mini player</span>
-      <button type="button" id="close-player" aria-label="Ẩn trình phát" title="Ẩn mini player nhưng vẫn tiếp tục phát">✕</button>
+/*
+ * Tien ich luyen nghe theo cau / doan (v1.0)
+ * Duoc thiet ke cho index.html cua repository:
+ * truongkhaai136-dot/netflix-phim-tai-word-xuong
+ * Tai vao SAU script hien co: <script src="./luyen-nghe.js"></script>
+ * Khong thay doi logic xu ly phu de va xuat DOCX cua trang goc.
+ */
+(() => {
+  "use strict";
+
+  if (document.getElementById("lp-panel")) return;
+  const transcriptEl = document.getElementById("transcript");
+  const transcriptPanel = document.querySelector('section[aria-label="Danh sách phụ đề"]');
+  const localEl = document.getElementById("local-video");
+  if (!transcriptEl || !transcriptPanel || !localEl) return;
+
+  const css = document.createElement("style");
+  css.textContent = `
+    #lp-panel { border-color: #b8d4f2; background: linear-gradient(140deg,#fff,#f3f8ff); }
+    #lp-panel h2 { margin: 0 0 6px; font-size: 20px; }
+    #lp-panel .lp-help { color: #52657f; font-size: 13px; line-height: 1.5; margin: 0 0 14px; }
+    #lp-panel .lp-grid { display: grid; grid-template-columns: minmax(155px,1.05fr) minmax(125px,.8fr) minmax(115px,.75fr) minmax(110px,.7fr) minmax(110px,.7fr); gap: 12px; align-items: end; }
+    #lp-panel .lp-field { display:flex; flex-direction:column; gap:6px; min-width:0; font-size:13px; font-weight:700; }
+    #lp-panel input:not([type="checkbox"]), #lp-panel select { width:100%; min-height:42px; border:1px solid #b7c9e0; border-radius:9px; background:#fff; padding:8px 10px; color:#172033; font:inherit; }
+    #lp-panel input:disabled { background:#eaf0f7; color:#53677e; cursor:not-allowed; }
+    #lp-panel .lp-options { display:flex; flex-wrap:wrap; align-items:center; gap:12px 20px; margin:13px 0 0; }
+    #lp-panel .lp-checkbox { display:inline-flex; gap:7px; align-items:center; font-size:13px; color:#1d344f; font-weight:600; cursor:pointer; }
+    #lp-panel .lp-checkbox input { accent-color:#2563eb; }
+    #lp-panel .lp-actions { display:flex; flex-wrap:wrap; gap:9px; margin:14px 0 10px; }
+    #lp-panel .lp-actions button { padding:10px 13px; min-height:42px; }
+    #lp-panel .lp-main { background:#2563eb; } #lp-panel .lp-stop { background:#9a580a; }
+    #lp-panel .lp-normal { background:#16865b; } #lp-panel .lp-apply { background:#64748b; }
+    #lp-status { font-size:13px; color:#244e78; line-height:1.55; padding:9px 11px; border:1px solid #c7d8e8; background:#f6faff; border-radius:8px; min-height:40px; }
+    #lp-status.lp-error { color:#9a251e; border-color:#e8b1af; background:#fff4f4; }
+    #lp-selected-label { font-weight:700; color:#1f416b; margin:10px 0 0; font-size:13px; overflow-wrap:anywhere; }
+    #transcript .lp-picked { outline:2px solid #376ce4; outline-offset:1px; }
+    #transcript .cue-time { white-space:normal; }
+    #transcript .lp-cue-button { display:block; min-height:25px; margin-top:5px; padding:4px 6px; border-radius:6px; background:#e0edff; color:#164a9e; border:1px solid #a9c7ed; font-size:11px; font-weight:800; line-height:1.1; white-space:nowrap; }
+    #transcript .lp-cue-button:hover { background:#c6dfff; }
+    #transcript .lp-cue-button:focus-visible { outline:2px solid #2563eb; }
+    @media (max-width:900px) { #lp-panel .lp-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+    @media (max-width:600px) { #lp-panel .lp-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } #lp-panel .lp-actions button { flex:1 1 auto; } }
+  `;
+  document.head.appendChild(css);
+
+  const panel = document.createElement("section");
+  panel.id = "lp-panel";
+  panel.className = "panel";
+  panel.setAttribute("aria-label", "Luyện nghe lặp câu và điều chỉnh tốc độ");
+  panel.innerHTML = `
+    <h2>🎧 Luyện nghe từng câu / từng đoạn</h2>
+    <p class="lp-help">Bấm <strong>↻ Lặp</strong> ngay cạnh một câu, hoặc tự điền điểm bắt đầu và kết thúc. Hoạt động với video trên máy và YouTube (nếu tốc độ đó được video hỗ trợ).</p>
+    <div class="lp-grid">
+      <label class="lp-field" for="lp-mode">Chọn phạm vi
+        <select id="lp-mode"><option value="cue">Một câu phụ đề</option><option value="custom">Mốc thời gian tùy chọn</option></select>
+      </label>
+      <label class="lp-field" for="lp-speed">Tốc độ phát
+        <select id="lp-speed">
+          <option value="0.25">0,25× (rất chậm)</option><option value="0.5">0,5×</option>
+          <option value="0.75">0,75×</option><option value="1" selected>1× (bình thường)</option>
+          <option value="1.25">1,25×</option><option value="1.5">1,5×</option><option value="2">2×</option>
+        </select>
+      </label>
+      <label class="lp-field" for="lp-repetitions">Số lần phát
+        <input id="lp-repetitions" type="number" min="1" max="9999" step="1" value="3">
+      </label>
+      <label class="lp-field" for="lp-start">Bắt đầu (mm:ss)
+        <input id="lp-start" type="text" inputmode="decimal" value="00:00.000" disabled placeholder="01:15.500">
+      </label>
+      <label class="lp-field" for="lp-end">Kết thúc (mm:ss)
+        <input id="lp-end" type="text" inputmode="decimal" value="00:00.000" disabled placeholder="01:19.200">
+      </label>
     </div>
-    <div id="player-container">
-      <div id="youtube-player-shell"><div id="youtube-player"></div></div>
-      <video id="local-video" controls playsinline preload="metadata" aria-label="Video trên máy tính"></video>
+    <div class="lp-options">
+      <label class="lp-checkbox"><input id="lp-infinite" type="checkbox"> Lặp vô hạn (∞)</label>
+      <label class="lp-checkbox"><input id="lp-auto-click" type="checkbox"> Bấm vào câu là tự lặp</label>
     </div>
-  </aside>
-
-  <script>
-    "use strict";
-
-    let ytPlayer = null;
-    let youtubeApiReady = false;
-    let youtubeApiLoading = false;
-    let pendingVideoId = "";
-    let syncTimer = null;
-    let playerMode = "";
-    let localVideoObjectUrl = "";
-    let transcriptItems = [];
-    let cueElements = [];
-    let activeCueIndex = -1;
-    let suspendAutoScrollUntil = 0;
-    let lastSourceName = "";
-    let lastVietnameseName = "";
-
-    const sourceInput = document.getElementById("source-vtt");
-    const vietnameseInput = document.getElementById("vi-vtt");
-    const localVideoInput = document.getElementById("local-video-file");
-    const youtubeInput = document.getElementById("youtube-url");
-    const wordFileInput = document.getElementById("word-file-input");
-    const localVideo = document.getElementById("local-video");
-    const youtubePlayerShell = document.getElementById("youtube-player-shell");
-    const playerTitle = document.getElementById("player-title");
-    const autoScrollInput = document.getElementById("auto-scroll");
-    const autoAlignInput = document.getElementById("auto-align");
-    const manualOffsetInput = document.getElementById("manual-offset");
-    const transcript = document.getElementById("transcript");
-    const transcriptSummary = document.getElementById("transcript-summary");
-    const statusBox = document.getElementById("status-box");
-    const floatingPlayer = document.getElementById("floating-player");
-    const downloadWordButton = document.getElementById("download-word-button");
-
-    function showStatus(message, type = "info") {
-      statusBox.textContent = message;
-      statusBox.className = `status-box show${type === "info" ? "" : ` ${type}`}`;
-    }
-
-    function clearStatus() {
-      statusBox.textContent = "";
-      statusBox.className = "status-box";
-    }
-
-    function cleanText(value) {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(`<div>${String(value || "")}</div>`, "text/html");
-      return (doc.body.textContent || "")
-        .replace(/\u200B|\u200C|\u200D|\uFEFF/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
-
-    function parseTimestamp(value) {
-      const normalized = String(value || "").trim().replace(",", ".");
-      const parts = normalized.split(":");
-      if (parts.length < 2 || parts.length > 3) return NaN;
-      let hours = 0;
-      let minutes = 0;
-      let seconds = 0;
-      if (parts.length === 3) {
-        hours = Number(parts[0]);
-        minutes = Number(parts[1]);
-        seconds = Number(parts[2]);
-      } else {
-        minutes = Number(parts[0]);
-        seconds = Number(parts[1]);
-      }
-      if (![hours, minutes, seconds].every(Number.isFinite)) return NaN;
-      return hours * 3600 + minutes * 60 + seconds;
-    }
-
-    function formatTime(seconds) {
-      const safe = Math.max(0, Number(seconds) || 0);
-      const hours = Math.floor(safe / 3600);
-      const minutes = Math.floor((safe % 3600) / 60);
-      const secs = Math.floor(safe % 60);
-      return hours > 0
-        ? `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
-        : `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-    }
-
-    function parseTimedSubtitle(rawText) {
-      const lines = String(rawText || "").replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n").split("\n");
-      const cues = [];
-      const timingPattern = /^\s*((?:\d{1,2}:)?\d{1,2}:\d{2}[.,]\d{1,3})\s*-->\s*((?:\d{1,2}:)?\d{1,2}:\d{2}[.,]\d{1,3})/;
-
-      for (let index = 0; index < lines.length; index += 1) {
-        const match = lines[index].match(timingPattern);
-        if (!match) continue;
-
-        const start = parseTimestamp(match[1]);
-        const end = parseTimestamp(match[2]);
-        const textLines = [];
-        index += 1;
-
-        while (index < lines.length && !timingPattern.test(lines[index])) {
-          const current = lines[index].trim();
-          if (current && !/^\d+$/.test(current) && !/^NOTE(?:\s|$)/i.test(current)) {
-            textLines.push(current);
-          }
-          if (!current && textLines.length) break;
-          index += 1;
-        }
-
-        index -= 1;
-        const text = cleanText(textLines.join(" "));
-        if (Number.isFinite(start) && Number.isFinite(end) && text) {
-          cues.push({ start, end: Math.max(end, start + 0.05), text });
-        }
-      }
-
-      return cues;
-    }
-
-    function parsePlainLines(rawText) {
-      return String(rawText || "")
-        .replace(/^\uFEFF/, "")
-        .replace(/\r\n?/g, "\n")
-        .split("\n")
-        .map(cleanText)
-        .filter(line => line && !/^WEBVTT$/i.test(line) && !/^NOTE(?:\s|$)/i.test(line) && !/^\d+$/.test(line));
-    }
-
-    // Phụ đề thường chia một câu thành nhiều cue ngắn. Các hàm dưới đây
-    // khôi phục câu hoàn chỉnh trước khi ghép hai ngôn ngữ và trước khi xuất Word.
-    function hasSentenceEnding(text) {
-      return /[.!?…。！？][\]})>»”’"']*\s*$/.test(cleanText(text));
-    }
-
-    function splitSentenceChunks(text) {
-      const value = cleanText(text);
-      if (!value) return [];
-      const chunks = value.match(/.*?[.!?…。！？]+[\]})>»”’"']*(?=\s|$)|.+$/g);
-      return (chunks || [value]).map(cleanText).filter(Boolean);
-    }
-
-    function wordTokens(text) {
-      return cleanText(text).split(/\s+/).filter(Boolean);
-    }
-
-    function extractNewSubtitleFragment(previousCueText, currentCueText) {
-      const previous = cleanText(previousCueText);
-      const current = cleanText(currentCueText);
-      if (!previous) return current;
-      if (!current) return "";
-
-      const previousLower = previous.toLocaleLowerCase();
-      const currentLower = current.toLocaleLowerCase();
-      if (currentLower === previousLower) return "";
-      if (currentLower.startsWith(previousLower)) {
-        return cleanText(current.slice(previous.length));
-      }
-      if (previousLower.startsWith(currentLower)) return "";
-
-      const previousWords = wordTokens(previous);
-      const currentWords = wordTokens(current);
-      const maximum = Math.min(previousWords.length, currentWords.length, 18);
-      for (let size = maximum; size >= 2; size -= 1) {
-        const left = previousWords.slice(-size).join(" ").toLocaleLowerCase();
-        const right = currentWords.slice(0, size).join(" ").toLocaleLowerCase();
-        if (left === right) return cleanText(currentWords.slice(size).join(" "));
-      }
-      return current;
-    }
-
-    function groupTimedCuesIntoSentences(cues) {
-      const grouped = [];
-      let buffer = "";
-      let bufferStart = 0;
-      let bufferEnd = 0;
-      let previousCueText = "";
-      let previousCueEnd = -Infinity;
-
-      function flush(force = false) {
-        const text = cleanText(buffer);
-        if (text && (force || hasSentenceEnding(text))) {
-          grouped.push({
-            start: bufferStart,
-            end: Math.max(bufferEnd, bufferStart + 0.05),
-            text
-          });
-          buffer = "";
-        }
-      }
-
-      cues.forEach((cue, index) => {
-        const cueText = cleanText(cue.text);
-        if (!cueText) return;
-
-        const gap = Number.isFinite(previousCueEnd) ? cue.start - previousCueEnd : 0;
-        if (buffer && gap > 2.4) flush(true);
-
-        const fragment = extractNewSubtitleFragment(previousCueText, cueText);
-        if (!fragment) {
-          previousCueText = cueText;
-          previousCueEnd = cue.end;
-          return;
-        }
-
-        const chunks = splitSentenceChunks(fragment);
-        chunks.forEach(chunk => {
-          if (!buffer) bufferStart = cue.start;
-          buffer = cleanText(`${buffer} ${chunk}`);
-          bufferEnd = cue.end;
-
-          if (hasSentenceEnding(chunk)) flush(true);
-          else if (buffer.length >= 360 || bufferEnd - bufferStart >= 20) flush(true);
-        });
-
-        const nextCue = cues[index + 1];
-        if (buffer && nextCue && nextCue.start - cue.end > 2.4) flush(true);
-        previousCueText = cueText;
-        previousCueEnd = cue.end;
-      });
-
-      flush(true);
-      return grouped;
-    }
-
-    function groupPlainLinesIntoSentences(lines) {
-      const grouped = [];
-      let buffer = "";
-      for (const line of lines) {
-        const chunks = splitSentenceChunks(line);
-        for (const chunk of chunks) {
-          buffer = cleanText(`${buffer} ${chunk}`);
-          if (hasSentenceEnding(chunk) || buffer.length >= 360) {
-            grouped.push(buffer);
-            buffer = "";
-          }
-        }
-      }
-      if (buffer) grouped.push(buffer);
-      return grouped;
-    }
-
-    function sampleEvenly(values, maximum = 280) {
-      if (values.length <= maximum) return values.slice();
-      const sampled = [];
-      for (let index = 0; index < maximum; index += 1) {
-        sampled.push(values[Math.round(index * (values.length - 1) / Math.max(1, maximum - 1))]);
-      }
-      return sampled;
-    }
-
-    function nearestDistance(sortedValues, target) {
-      let low = 0;
-      let high = sortedValues.length;
-      while (low < high) {
-        const middle = (low + high) >> 1;
-        if (sortedValues[middle] < target) low = middle + 1;
-        else high = middle;
-      }
-      let distance = Infinity;
-      if (low < sortedValues.length) distance = Math.min(distance, Math.abs(sortedValues[low] - target));
-      if (low > 0) distance = Math.min(distance, Math.abs(sortedValues[low - 1] - target));
-      return distance;
-    }
-
-    function boundaryAlignmentScore(sourceValues, translationValues, offset) {
-      const sigma = 0.32;
-      const denominator = 2 * sigma * sigma;
-      let sourceScore = 0;
-      let translationScore = 0;
-
-      sourceValues.forEach(value => {
-        const distance = nearestDistance(translationValues, value - offset);
-        sourceScore += Math.exp(-(distance * distance) / denominator);
-      });
-
-      translationValues.forEach(value => {
-        const distance = nearestDistance(sourceValues, value + offset);
-        translationScore += Math.exp(-(distance * distance) / denominator);
-      });
-
-      return ((sourceScore / Math.max(1, sourceValues.length)) +
-        (translationScore / Math.max(1, translationValues.length))) / 2;
-    }
-
-    // Không so sánh cue thứ N của hai file vì hai ngôn ngữ thường có số cue khác nhau.
-    // Thay vào đó, tìm độ dịch thời gian làm nhiều mốc bắt đầu/kết thúc trùng nhau nhất.
-    function estimateTranslationOffset(sourceCues, translationCues) {
-      if (!sourceCues.length || !translationCues.length) return 0;
-
-      const sourceBoundaries = sampleEvenly(sourceCues.flatMap(cue => [cue.start, cue.end]).sort((a, b) => a - b));
-      const translationBoundaries = sampleEvenly(translationCues.flatMap(cue => [cue.start, cue.end]).sort((a, b) => a - b));
-      let bestOffset = 0;
-      let bestScore = boundaryAlignmentScore(sourceBoundaries, translationBoundaries, 0);
-
-      for (let offset = -15; offset <= 15.0001; offset += 0.1) {
-        const score = boundaryAlignmentScore(sourceBoundaries, translationBoundaries, offset);
-        if (score > bestScore) {
-          bestScore = score;
-          bestOffset = offset;
-        }
-      }
-
-      const coarseOffset = bestOffset;
-      for (let offset = coarseOffset - 0.12; offset <= coarseOffset + 0.1201; offset += 0.01) {
-        const score = boundaryAlignmentScore(sourceBoundaries, translationBoundaries, offset);
-        if (score > bestScore) {
-          bestScore = score;
-          bestOffset = offset;
-        }
-      }
-
-      // Điểm quá thấp nghĩa là hai file không đủ giống nhau để tự đo đáng tin cậy.
-      if (bestScore < 0.08) return 0;
-      return Math.round(bestOffset * 1000) / 1000;
-    }
-
-    function joinCueTexts(cues) {
-      return cleanText(cues.map(cue => cue.text).join(" "));
-    }
-
-    // Ghép tuần tự theo các ranh giới thời gian. Một câu ở ngôn ngữ này có thể
-    // tương ứng với nhiều câu ở ngôn ngữ kia, nên mỗi hàng có thể là khối 1-n,
-    // n-1 hoặc n-n. Cách này ngăn phần dư bị đẩy sang hàng kế tiếp và lệch dây chuyền.
-    function mergeTimedCues(sourceCues, translationCues, offset) {
-      const adjusted = translationCues.map(cue => ({
-        ...cue,
-        start: cue.start + offset,
-        end: cue.end + offset
-      }));
-      const result = [];
-      const unmatchedGap = 1.6;
-      const boundaryTolerance = 1.25;
-      const continuationGap = 3.2;
-      const maximumItemsPerSide = 8;
-      const maximumBlockDuration = 35;
-      let sourceIndex = 0;
-      let translationIndex = 0;
-
-      while (sourceIndex < sourceCues.length && translationIndex < adjusted.length) {
-        const sourceCue = sourceCues[sourceIndex];
-        const translationCue = adjusted[translationIndex];
-
-        // Một cue kết thúc rõ ràng trước khi ngôn ngữ kia bắt đầu: giữ nó là hàng thiếu dịch
-        // (khi xuất Word hàng này tự bị bỏ qua), thay vì ép ghép sai với câu kế tiếp.
-        if (sourceCue.end < translationCue.start - unmatchedGap) {
-          result.push({
-            start: sourceCue.start,
-            end: sourceCue.end,
-            source: sourceCue.text,
-            translation: ""
-          });
-          sourceIndex += 1;
-          continue;
-        }
-        if (translationCue.end < sourceCue.start - unmatchedGap) {
-          translationIndex += 1;
-          continue;
-        }
-
-        const sourceBlock = [sourceCue];
-        const translationBlock = [translationCue];
-        sourceIndex += 1;
-        translationIndex += 1;
-
-        const blockStart = Math.min(sourceCue.start, translationCue.start);
-        let sourceEnd = sourceCue.end;
-        let translationEnd = translationCue.end;
-
-        while (Math.abs(sourceEnd - translationEnd) > boundaryTolerance) {
-          if (sourceEnd < translationEnd) {
-            if (sourceIndex >= sourceCues.length || sourceBlock.length >= maximumItemsPerSide) break;
-            const nextSource = sourceCues[sourceIndex];
-            if (nextSource.start > translationEnd + continuationGap) break;
-            if (Math.max(nextSource.end, translationEnd) - blockStart > maximumBlockDuration) break;
-            sourceBlock.push(nextSource);
-            sourceIndex += 1;
-            sourceEnd = Math.max(sourceEnd, nextSource.end);
-          } else {
-            if (translationIndex >= adjusted.length || translationBlock.length >= maximumItemsPerSide) break;
-            const nextTranslation = adjusted[translationIndex];
-            if (nextTranslation.start > sourceEnd + continuationGap) break;
-            if (Math.max(nextTranslation.end, sourceEnd) - blockStart > maximumBlockDuration) break;
-            translationBlock.push(nextTranslation);
-            translationIndex += 1;
-            translationEnd = Math.max(translationEnd, nextTranslation.end);
-          }
-        }
-
-        result.push({
-          start: sourceBlock[0].start,
-          end: Math.max(...sourceBlock.map(cue => cue.end)),
-          source: joinCueTexts(sourceBlock),
-          translation: joinCueTexts(translationBlock)
-        });
-      }
-
-      while (sourceIndex < sourceCues.length) {
-        const sourceCue = sourceCues[sourceIndex];
-        result.push({
-          start: sourceCue.start,
-          end: sourceCue.end,
-          source: sourceCue.text,
-          translation: ""
-        });
-        sourceIndex += 1;
-      }
-
-      return result;
-    }
-
-    function mergePlainTranslation(sourceCues, translationLines) {
-      return sourceCues.map((cue, index) => ({
-        start: cue.start,
-        end: cue.end,
-        source: cue.text,
-        translation: translationLines[index] || ""
-      }));
-    }
-
-    async function readTextFile(file) {
-      if (!file) throw new Error("Chưa chọn file.");
-      return file.text();
-    }
-
-    async function processSubtitleFiles() {
-      clearStatus();
-      const sourceFile = sourceInput.files[0];
-      const vietnameseFile = vietnameseInput.files[0];
-
-      if (!sourceFile || !vietnameseFile) {
-        showStatus("Hãy chọn cả phụ đề gốc và phụ đề tiếng Việt.", "error");
-        return;
-      }
-
-      try {
-        const [sourceRaw, vietnameseRaw] = await Promise.all([readTextFile(sourceFile), readTextFile(vietnameseFile)]);
-        const sourceRawCues = parseTimedSubtitle(sourceRaw);
-        if (!sourceRawCues.length) throw new Error("Không tìm thấy timestamp hợp lệ trong file phụ đề gốc.");
-        const sourceCues = groupTimedCuesIntoSentences(sourceRawCues);
-
-        const translationRawCues = parseTimedSubtitle(vietnameseRaw);
-        const translationTimed = groupTimedCuesIntoSentences(translationRawCues);
-        const manualOffset = Number(manualOffsetInput.value) || 0;
-        let autoOffset = 0;
-
-        if (translationTimed.length) {
-          if (autoAlignInput.checked) autoOffset = estimateTranslationOffset(sourceRawCues, translationRawCues);
-          transcriptItems = mergeTimedCues(sourceCues, translationTimed, autoOffset + manualOffset);
-        } else {
-          const plainSentences = groupPlainLinesIntoSentences(parsePlainLines(vietnameseRaw));
-          transcriptItems = mergePlainTranslation(sourceCues, plainSentences);
-        }
-
-        lastSourceName = sourceFile.name;
-        lastVietnameseName = vietnameseFile.name;
-        renderTranscript();
-        const paired = countPairedRows();
-        const alignmentMessage = translationTimed.length
-          ? ` Độ bù tự động: ${autoOffset >= 0 ? "+" : ""}${autoOffset.toFixed(3)} giây; bù thủ công: ${manualOffset >= 0 ? "+" : ""}${manualOffset.toFixed(3)} giây.`
-          : " Bản dịch TXT thuần đã được ghép theo thứ tự dòng.";
-        showStatus(`Đã tạo ${transcriptItems.length} khối câu hoàn chỉnh, trong đó ${paired} khối có bản dịch khớp theo thời gian.${alignmentMessage}`, "success");
-      } catch (error) {
-        console.error(error);
-        showStatus(error.message || "Không thể xử lý phụ đề.", "error");
-      }
-    }
-
-    function countPairedRows() {
-      return transcriptItems.filter(item => cleanText(item.source) && cleanText(item.translation)).length;
-    }
-
-    function renderTranscript() {
-      cueElements = [];
-      activeCueIndex = -1;
-      transcript.replaceChildren();
-
-      if (!transcriptItems.length) {
-        transcript.innerHTML = '<div class="empty-state">Không có câu phụ đề để hiển thị.</div>';
-        transcriptSummary.textContent = "Chưa có dữ liệu.";
-        downloadWordButton.disabled = true;
-        return;
-      }
-
-      const fragment = document.createDocumentFragment();
-      transcriptItems.forEach((item, index) => {
-        const row = document.createElement("div");
-        row.className = "cue-row";
-        row.tabIndex = 0;
-        row.dataset.index = String(index);
-        row.setAttribute("role", "button");
-        row.setAttribute("aria-label", `Tua đến ${formatTime(item.start)}: ${item.source}`);
-
-        const time = document.createElement("div");
-        time.className = "cue-time";
-        time.textContent = formatTime(item.start);
-
-        const textWrap = document.createElement("div");
-        const sourceText = document.createElement("div");
-        sourceText.className = "foreign-text";
-        sourceText.textContent = item.source;
-        textWrap.appendChild(sourceText);
-
-        const inlineTranslation = document.createElement("div");
-        inlineTranslation.className = `translation-inline${item.translation ? "" : " no-translation"}`;
-        inlineTranslation.textContent = item.translation || "Không có câu tiếng Việt tương ứng";
-        textWrap.appendChild(inlineTranslation);
-
-        const tooltip = document.createElement("div");
-        tooltip.className = `translation-tooltip${item.translation ? "" : " no-translation"}`;
-        tooltip.textContent = item.translation || "Không có câu tiếng Việt tương ứng";
-
-        row.append(time, textWrap, tooltip);
-        row.addEventListener("click", () => seekTo(item.start));
-        row.addEventListener("keydown", event => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            seekTo(item.start);
-          }
-        });
-        fragment.appendChild(row);
-        cueElements.push(row);
-      });
-
-      transcript.appendChild(fragment);
-      const paired = countPairedRows();
-      transcriptSummary.textContent = `${transcriptItems.length} khối câu hoàn chỉnh · ${paired} cặp đủ hai ngôn ngữ`;
-      downloadWordButton.disabled = paired === 0;
-    }
-
-    function getCurrentPlaybackTime() {
-      if (playerMode === "local" && !localVideo.paused && Number.isFinite(localVideo.currentTime)) return localVideo.currentTime;
-      if (playerMode === "local" && Number.isFinite(localVideo.currentTime)) return localVideo.currentTime;
-      if (playerMode === "youtube" && ytPlayer && typeof ytPlayer.getCurrentTime === "function") {
-        const value = ytPlayer.getCurrentTime();
-        return Number.isFinite(value) ? value : 0;
-      }
-      return 0;
-    }
-
-    function findActiveCueIndex(time) {
-      let low = 0;
-      let high = transcriptItems.length - 1;
-      let candidate = -1;
-      while (low <= high) {
-        const middle = Math.floor((low + high) / 2);
-        if (transcriptItems[middle].start <= time + 0.05) {
-          candidate = middle;
-          low = middle + 1;
-        } else {
-          high = middle - 1;
-        }
-      }
-      if (candidate < 0) return -1;
-      const cue = transcriptItems[candidate];
-      const nextStart = transcriptItems[candidate + 1]?.start ?? Infinity;
-      return time <= Math.max(cue.end + 0.35, Math.min(nextStart, cue.end + 2.2)) ? candidate : -1;
-    }
-
-    function updateActiveCue() {
-      if (!transcriptItems.length || !playerMode) return;
-      const index = findActiveCueIndex(getCurrentPlaybackTime());
-      if (index === activeCueIndex) return;
-
-      if (activeCueIndex >= 0 && cueElements[activeCueIndex]) cueElements[activeCueIndex].classList.remove("active");
-      activeCueIndex = index;
-      if (index >= 0 && cueElements[index]) {
-        cueElements[index].classList.add("active");
-        if (autoScrollInput.checked && Date.now() > suspendAutoScrollUntil) {
-          cueElements[index].scrollIntoView({ behavior: "smooth", block: "center" });
-        }
-      }
-    }
-
-    function startSyncTimer() {
-      if (syncTimer) clearInterval(syncTimer);
-      syncTimer = setInterval(updateActiveCue, 180);
-    }
-
-    function seekTo(seconds) {
-      if (playerMode === "local" && localVideo.src) {
-        localVideo.currentTime = Math.max(0, seconds);
-        localVideo.play().catch(() => {});
-        showFloatingPlayer();
-      } else if (playerMode === "youtube" && ytPlayer && typeof ytPlayer.seekTo === "function") {
-        ytPlayer.seekTo(Math.max(0, seconds), true);
-        if (typeof ytPlayer.playVideo === "function") ytPlayer.playVideo();
-        showFloatingPlayer();
-      } else {
-        showStatus("Hãy mở video trên máy hoặc YouTube trước khi bấm vào câu phụ đề.", "error");
-      }
-    }
-
-    function showFloatingPlayer() {
-      floatingPlayer.classList.add("show");
-      keepPlayerInsideViewport();
-    }
-
-    function openLocalVideo() {
-      const file = localVideoInput.files[0];
-      if (!file) {
-        showStatus("Hãy chọn một file video trên máy tính.", "error");
-        return;
-      }
-
-      if (localVideoObjectUrl) URL.revokeObjectURL(localVideoObjectUrl);
-      localVideoObjectUrl = URL.createObjectURL(file);
-      localVideo.src = localVideoObjectUrl;
-      localVideo.style.display = "block";
-      youtubePlayerShell.style.display = "none";
-      playerMode = "local";
-      playerTitle.textContent = file.name;
-      showFloatingPlayer();
-      startSyncTimer();
-      localVideo.play().catch(() => {});
-      showStatus(`Đã mở video: ${file.name}`, "success");
-    }
-
-    function extractYouTubeId(input) {
-      const value = String(input || "").trim();
-      if (/^[A-Za-z0-9_-]{11}$/.test(value)) return value;
-      try {
-        const url = new URL(value);
-        if (url.hostname === "youtu.be") return url.pathname.split("/").filter(Boolean)[0] || "";
-        if (url.hostname.includes("youtube.com")) {
-          if (url.pathname === "/watch") return url.searchParams.get("v") || "";
-          const parts = url.pathname.split("/").filter(Boolean);
-          const marker = parts.findIndex(part => ["embed", "shorts", "live"].includes(part));
-          return marker >= 0 ? parts[marker + 1] || "" : "";
-        }
-      } catch (_) {}
-      return "";
-    }
-
-    function loadYouTubeApi() {
-      if (youtubeApiReady || youtubeApiLoading || window.YT?.Player) {
-        if (window.YT?.Player) {
-          youtubeApiReady = true;
-          if (pendingVideoId) createYouTubePlayer(pendingVideoId);
-        }
-        return;
-      }
-      youtubeApiLoading = true;
-      const script = document.createElement("script");
-      script.src = "https://www.youtube.com/iframe_api";
-      script.async = true;
-      script.onerror = () => {
-        youtubeApiLoading = false;
-        showStatus("Không tải được YouTube Player API. Hãy kiểm tra kết nối mạng.", "error");
-      };
-      document.head.appendChild(script);
-    }
-
-    window.onYouTubeIframeAPIReady = function () {
-      youtubeApiReady = true;
-      youtubeApiLoading = false;
-      if (pendingVideoId) createYouTubePlayer(pendingVideoId);
-    };
-
-    function createYouTubePlayer(videoId) {
-      if (!videoId || !window.YT?.Player) return;
-      pendingVideoId = "";
-      localVideo.pause();
-      localVideo.style.display = "none";
-      youtubePlayerShell.style.display = "block";
-      playerMode = "youtube";
-      playerTitle.textContent = `YouTube · ${videoId}`;
-      showFloatingPlayer();
-
-      if (ytPlayer && typeof ytPlayer.loadVideoById === "function") {
-        ytPlayer.loadVideoById(videoId);
-      } else {
-        ytPlayer = new YT.Player("youtube-player", {
-          videoId,
-          playerVars: { autoplay: 1, rel: 0, playsinline: 1 },
-          events: {
-            onReady: event => event.target.playVideo(),
-            onError: () => showStatus("YouTube không thể phát video này hoặc video không cho phép nhúng.", "error")
-          }
-        });
-      }
-      startSyncTimer();
-      showStatus(`Đã mở YouTube: ${videoId}`, "success");
-    }
-
-    function openYouTube() {
-      const videoId = extractYouTubeId(youtubeInput.value);
-      if (!videoId) {
-        showStatus("Link hoặc mã video YouTube không hợp lệ.", "error");
-        return;
-      }
-      pendingVideoId = videoId;
-      if (youtubeApiReady || window.YT?.Player) createYouTubePlayer(videoId);
-      else loadYouTubeApi();
-    }
-
-    function escapeXml(value) {
-      return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&apos;");
-    }
-
-    function wordRun(text, options = {}) {
-      const size = options.size || 17;
-      const bold = options.bold ? "<w:b/>" : "";
-      const vanish = options.vanish ? "<w:vanish/>" : "";
-      const color = options.color ? `<w:color w:val="${options.color}"/>` : "";
-      const safe = escapeXml(text);
-      return `<w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>${bold}${vanish}${color}<w:sz w:val="${size}"/><w:szCs w:val="${size}"/></w:rPr><w:t xml:space="preserve">${safe}</w:t></w:r>`;
-    }
-
-    function wordParagraph(runs, options = {}) {
-      const align = options.align ? `<w:jc w:val="${options.align}"/>` : "";
-      return `<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="190" w:lineRule="auto"/>${align}</w:pPr>${runs}</w:p>`;
-    }
-
-    function wordCell(content, width = 5000, shading = "") {
-      const shade = shading ? `<w:shd w:val="clear" w:color="auto" w:fill="${shading}"/>` : "";
-      return `<w:tc><w:tcPr><w:tcW w:w="${width}" w:type="pct"/>${shade}<w:tcMar><w:top w:w="35" w:type="dxa"/><w:left w:w="55" w:type="dxa"/><w:bottom w:w="35" w:type="dxa"/><w:right w:w="55" w:type="dxa"/></w:tcMar></w:tcPr>${content}</w:tc>`;
-    }
-
-    function buildDocumentXml(rows) {
-      const header = `<w:tr><w:trPr><w:tblHeader/><w:cantSplit/></w:trPr>${wordCell(wordParagraph(wordRun("Ngôn ngữ gốc", { bold: true, size: 16 }), { align: "center" }), 5000, "EAF1F8")}${wordCell(wordParagraph(wordRun("Tiếng Việt", { bold: true, size: 16 }), { align: "center" }), 5000, "EAF1F8")}</w:tr>`;
-
-      const bodyRows = rows.map(item => {
-        const marker = `[[PHUDE|${Number(item.start).toFixed(3)}|${Number(item.end).toFixed(3)}]]`;
-        const sourceRuns = wordRun(marker, { vanish: true, size: 2 }) + wordRun(cleanText(item.source), { size: 17 });
-        const translationRuns = wordRun(cleanText(item.translation), { size: 17 });
-        return `<w:tr><w:trPr><w:cantSplit/></w:trPr>${wordCell(wordParagraph(sourceRuns), 5000)}${wordCell(wordParagraph(translationRuns), 5000)}</w:tr>`;
-      }).join("");
-
-      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-  <w:body>
-    <w:tbl>
-      <w:tblPr>
-        <w:tblW w:w="10000" w:type="pct"/>
-        <w:tblLayout w:type="fixed"/>
-        <w:tblBorders>
-          <w:top w:val="single" w:sz="2" w:space="0" w:color="AEBBC8"/>
-          <w:left w:val="single" w:sz="2" w:space="0" w:color="AEBBC8"/>
-          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="AEBBC8"/>
-          <w:right w:val="single" w:sz="2" w:space="0" w:color="AEBBC8"/>
-          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="C6D0DA"/>
-          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="C6D0DA"/>
-        </w:tblBorders>
-        <w:tblCellMar><w:top w:w="35" w:type="dxa"/><w:left w:w="55" w:type="dxa"/><w:bottom w:w="35" w:type="dxa"/><w:right w:w="55" w:type="dxa"/></w:tblCellMar>
-      </w:tblPr>
-      <w:tblGrid><w:gridCol w:w="5100"/><w:gridCol w:w="5100"/></w:tblGrid>
-      ${header}${bodyRows}
-    </w:tbl>
-    <w:sectPr>
-      <w:pgSz w:w="11906" w:h="16838"/>
-      <w:pgMar w:top="425" w:right="425" w:bottom="425" w:left="425" w:header="0" w:footer="0" w:gutter="0"/>
-      <w:cols w:space="0"/>
-      <w:docGrid w:linePitch="190"/>
-    </w:sectPr>
-  </w:body>
-</w:document>`;
-    }
-
-    async function createDocxBlob(rows) {
-      if (typeof JSZip === "undefined") throw new Error("Không tải được thư viện tạo Word. Hãy kiểm tra kết nối mạng rồi tải lại trang.");
-      const zip = new JSZip();
-
-      zip.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-  <Default Extension="xml" ContentType="application/xml"/>
-  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
-  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
-  <Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/>
-  <Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
-  <Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>
-</Types>`);
-
-      zip.folder("_rels").file(".rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
-  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
-  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
-</Relationships>`);
-
-      zip.folder("docProps").file("core.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <dc:title>Script phụ đề song ngữ</dc:title><dc:creator>Phụ đề song ngữ</dc:creator><cp:lastModifiedBy>Phụ đề song ngữ</cp:lastModifiedBy>
-  <dcterms:created xsi:type="dcterms:W3CDTF">${new Date().toISOString()}</dcterms:created>
-  <dcterms:modified xsi:type="dcterms:W3CDTF">${new Date().toISOString()}</dcterms:modified>
-</cp:coreProperties>`);
-
-      zip.folder("docProps").file("app.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>Microsoft Office Word</Application><DocSecurity>0</DocSecurity><ScaleCrop>false</ScaleCrop><Company></Company><LinksUpToDate>false</LinksUpToDate><SharedDoc>false</SharedDoc><HyperlinksChanged>false</HyperlinksChanged><AppVersion>16.0000</AppVersion></Properties>`);
-
-      const word = zip.folder("word");
-      word.file("document.xml", buildDocumentXml(rows));
-      word.file("styles.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-  <w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/><w:sz w:val="17"/><w:szCs w:val="17"/><w:lang w:val="en-US" w:eastAsia="vi-VN" w:bidi="ar-SA"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:before="0" w:after="0" w:line="190" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>
-  <w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>
-  <w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/><w:uiPriority w:val="99"/><w:semiHidden/><w:unhideWhenUsed/><w:tblPr><w:tblInd w:w="0" w:type="dxa"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="55" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="55" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style>
-</w:styles>`);
-      word.file("settings.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:zoom w:percent="100"/><w:defaultTabStop w:val="360"/><w:characterSpacingControl w:val="doNotCompress"/><w:compat/></w:settings>`);
-      word.folder("_rels").file("document.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/></Relationships>`);
-
-      return zip.generateAsync({ type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", compression: "DEFLATE", compressionOptions: { level: 6 } });
-    }
-
-    function safeFilenameBase(name) {
-      return String(name || "script-song-ngu")
-        .replace(/\.[^.]+$/, "")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-zA-Z0-9_-]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .slice(0, 70) || "script-song-ngu";
-    }
-
-    async function downloadWordScript() {
-      const pairedRows = transcriptItems.filter(item => cleanText(item.source) && cleanText(item.translation));
-      if (!pairedRows.length) {
-        showStatus("Không có hàng nào đủ cả câu gốc và tiếng Việt để xuất Word.", "error");
-        return;
-      }
-
-      try {
-        downloadWordButton.disabled = true;
-        downloadWordButton.textContent = "Đang tạo Word…";
-        const blob = await createDocxBlob(pairedRows);
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement("a");
-        const sourceBase = safeFilenameBase(lastSourceName || "script-song-ngu");
-        anchor.href = url;
-        anchor.download = `${sourceBase}-song-ngu.docx`;
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 2500);
-        showStatus(`Đã tạo file Word gồm ${pairedRows.length} hàng song ngữ. Bảng dùng A4 dọc, lề khoảng 0,75 cm, chữ Arial 8,5 pt và khoảng cách dòng gọn để tiết kiệm giấy.`, "success");
-      } catch (error) {
-        console.error(error);
-        showStatus(error.message || "Không thể tạo file Word.", "error");
-      } finally {
-        downloadWordButton.textContent = "Tải script Word";
-        downloadWordButton.disabled = countPairedRows() === 0;
-      }
-    }
-
-    function getElementsByLocalName(parent, localName) {
-      return Array.from(parent.getElementsByTagNameNS("*", localName));
-    }
-
-    function readWordCell(cell) {
-      const hiddenParts = [];
-      const visibleParagraphs = [];
-      const paragraphs = getElementsByLocalName(cell, "p");
-
-      for (const paragraph of paragraphs) {
-        let visibleText = "";
-        const runs = getElementsByLocalName(paragraph, "r");
-        for (const run of runs) {
-          const isHidden = getElementsByLocalName(run, "vanish").length > 0;
-          const runText = getElementsByLocalName(run, "t").map(node => node.textContent || "").join("");
-          if (isHidden) hiddenParts.push(runText);
-          else visibleText += runText;
-          if (!isHidden && getElementsByLocalName(run, "br").length) visibleText += "\n";
-        }
-        const cleaned = cleanText(visibleText);
-        if (cleaned) visibleParagraphs.push(cleaned);
-      }
-
+    <div id="lp-selected-label">Chưa chọn câu phụ đề.</div>
+    <div class="lp-actions">
+      <button type="button" class="lp-main" id="lp-play">▶ Phát và lặp đoạn</button>
+      <button type="button" class="lp-stop" id="lp-stop">■ Dừng lặp</button>
+      <button type="button" class="lp-apply" id="lp-apply">Áp dụng tốc độ</button>
+      <button type="button" class="lp-normal" id="lp-normal">↺ 1× Bình thường</button>
+    </div>
+    <div id="lp-status" role="status" aria-live="polite">Sẵn sàng. Chọn câu hoặc mốc thời gian để bắt đầu luyện nghe.</div>
+  `;
+  transcriptPanel.parentNode.insertBefore(panel, transcriptPanel);
+
+  const $ = (id) => document.getElementById(id);
+  const modeInput = $("lp-mode");
+  const speedInput = $("lp-speed");
+  const repsInput = $("lp-repetitions");
+  const infiniteInput = $("lp-infinite");
+  const autoInput = $("lp-auto-click");
+  const startInput = $("lp-start");
+  const endInput = $("lp-end");
+  const statusEl = $("lp-status");
+  const selectedLabel = $("lp-selected-label");
+  let selectedIndex = -1;
+  let knownRows = [];
+  let currentLoop = null;
+  let intervalId = 0;
+
+  function status(message, isError = false) {
+    statusEl.textContent = message;
+    statusEl.classList.toggle("lp-error", isError);
+  }
+
+  // Cac bien playerMode, ytPlayer, transcriptItems la global lexical bindings
+  // trong script hien co cua index.html; script nay duoc nap SAU script do.
+  function getMedia() {
+    const mode = typeof playerMode === "string" ? playerMode : "";
+    if (mode === "local" && localEl.src) {
       return {
-        visible: cleanText(visibleParagraphs.join(" ")),
-        hidden: hiddenParts.join("")
+        kind: "local",
+        time: () => localEl.currentTime,
+        duration: () => localEl.duration,
+        seek: (time) => { localEl.currentTime = Math.max(0, time); },
+        play: () => { const promise = localEl.play(); if (promise?.catch) promise.catch(() => status("Không thể phát video tự động. Hãy nhấn Play trên video.", true)); },
+        pause: () => localEl.pause(),
+        rate: (value) => { localEl.playbackRate = value; return localEl.playbackRate; }
       };
     }
-
-    async function importWordScript(file) {
-      if (!file) return;
-      if (!/\.docx$/i.test(file.name)) {
-        showStatus("Chỉ hỗ trợ file .docx. Hãy dùng chính file được tạo bởi nút “Tải script Word”.", "error");
-        wordFileInput.value = "";
-        return;
-      }
-      if (typeof JSZip === "undefined") {
-        showStatus("Không tải được thư viện đọc Word. Hãy kiểm tra kết nối mạng rồi tải lại trang.", "error");
-        return;
-      }
-
-      try {
-        const zip = await JSZip.loadAsync(await file.arrayBuffer());
-        const documentFile = zip.file("word/document.xml");
-        if (!documentFile) throw new Error("File Word không có nội dung document.xml hợp lệ.");
-        const xmlText = await documentFile.async("text");
-        const xml = new DOMParser().parseFromString(xmlText, "application/xml");
-        if (xml.querySelector("parsererror")) throw new Error("Không đọc được cấu trúc XML trong file Word.");
-
-        const rows = getElementsByLocalName(xml, "tr");
-        const imported = [];
-        let syntheticStart = 0;
-        let rowsWithoutTimestamp = 0;
-
-        for (const row of rows) {
-          const cells = getElementsByLocalName(row, "tc");
-          if (cells.length < 2) continue;
-          const sourceCell = readWordCell(cells[0]);
-          const translationCell = readWordCell(cells[1]);
-          const source = sourceCell.visible;
-          const translation = translationCell.visible;
-          if (!source || !translation) continue;
-          if (/^ngôn ngữ gốc$/i.test(source) && /^tiếng việt$/i.test(translation)) continue;
-
-          const marker = sourceCell.hidden.match(/\[\[PHUDE\|([\d.]+)\|([\d.]+)\]\]/);
-          let start;
-          let end;
-          if (marker) {
-            start = Number(marker[1]);
-            end = Number(marker[2]);
-          } else {
-            start = syntheticStart;
-            end = start + 2.8;
-            syntheticStart += 3;
-            rowsWithoutTimestamp += 1;
-          }
-          imported.push({ start, end: Math.max(end, start + .05), source, translation });
+    const yt = typeof ytPlayer !== "undefined" ? ytPlayer : null;
+    if (mode === "youtube" && yt && typeof yt.seekTo === "function" && typeof yt.getCurrentTime === "function") {
+      return {
+        kind: "youtube",
+        time: () => yt.getCurrentTime(),
+        duration: () => typeof yt.getDuration === "function" ? yt.getDuration() : NaN,
+        seek: (time) => yt.seekTo(Math.max(0, time), true),
+        play: () => yt.playVideo(),
+        pause: () => yt.pauseVideo(),
+        rate: (value) => {
+          const available = typeof yt.getAvailablePlaybackRates === "function" ? yt.getAvailablePlaybackRates() : [];
+          const speed = available.length && !available.includes(value)
+            ? available.reduce((best, x) => Math.abs(x - value) < Math.abs(best - value) ? x : best, available[0])
+            : value;
+          yt.setPlaybackRate(speed);
+          return typeof yt.getPlaybackRate === "function" ? yt.getPlaybackRate() : speed;
         }
-
-        if (!imported.length) throw new Error("Không tìm thấy bảng hai cột có câu gốc và tiếng Việt trong file Word.");
-        transcriptItems = imported.sort((a, b) => a.start - b.start);
-        lastSourceName = file.name.replace(/-song-ngu\.docx$/i, "");
-        lastVietnameseName = "Nhập từ Word";
-        renderTranscript();
-        document.getElementById("word-file-status").textContent = `${file.name} · ${imported.length} hàng`;
-        const warning = rowsWithoutTimestamp
-          ? ` Có ${rowsWithoutTimestamp} hàng không còn mã thời gian ẩn nên ứng dụng đã gán thời gian tạm; các hàng còn mã thời gian vẫn đồng bộ chính xác.`
-          : " Toàn bộ timestamp ẩn đã được khôi phục để tiếp tục đồng bộ video.";
-        showStatus(`Đã nhập ${imported.length} cặp câu từ Word.${warning}`, rowsWithoutTimestamp ? "info" : "success");
-      } catch (error) {
-        console.error(error);
-        showStatus(error.message || "Không thể nhập file Word.", "error");
-      } finally {
-        wordFileInput.value = "";
-      }
-    }
-
-    function normalizeHexColor(value, fallback = "#dceeff") {
-      return /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : fallback;
-    }
-
-    function hexToRgb(hex) {
-      const normalized = normalizeHexColor(hex).slice(1);
-      return { r: parseInt(normalized.slice(0,2),16), g: parseInt(normalized.slice(2,4),16), b: parseInt(normalized.slice(4,6),16) };
-    }
-
-    function rgbToHex(r, g, b) {
-      return `#${[r,g,b].map(value => Math.round(Math.min(255,Math.max(0,value))).toString(16).padStart(2,"0")).join("")}`;
-    }
-
-    function shadeHex(hex, amount) {
-      const { r, g, b } = hexToRgb(hex);
-      const factor = 1 + amount;
-      return rgbToHex(r * factor, g * factor, b * factor);
-    }
-
-    function chooseContrastText(hex) {
-      const { r, g, b } = hexToRgb(hex);
-      const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-      return luminance < .5 ? "#ffffff" : "#172033";
-    }
-
-    function applyDisplaySettings() {
-      const colorInput = document.getElementById("highlight-color");
-      const rangeInput = document.getElementById("font-size-range");
-      const numberInput = document.getElementById("font-size-number");
-      const fontInput = document.getElementById("font-family");
-      const color = normalizeHexColor(colorInput.value);
-      const size = Math.min(34, Math.max(13, Number(rangeInput.value) || 18));
-      const textColor = chooseContrastText(color);
-
-      document.documentElement.style.setProperty("--pastel-blue", color);
-      document.documentElement.style.setProperty("--pastel-blue-border", shadeHex(color, -.2));
-      document.documentElement.style.setProperty("--highlight-text", textColor);
-      document.documentElement.style.setProperty("--highlight-shadow", `${color}66`);
-      document.documentElement.style.setProperty("--subtitle-font-size", `${size}px`);
-      document.documentElement.style.setProperty("--translation-font-size", `${Math.max(13, size - 2)}px`);
-      document.documentElement.style.setProperty("--subtitle-font-family", fontInput.value);
-      colorInput.value = color;
-      rangeInput.value = String(size);
-      numberInput.value = String(size);
-      document.getElementById("highlight-color-text").textContent = color.toUpperCase();
-
-      localStorage.setItem("phude-display-settings", JSON.stringify({ color, size, font: fontInput.value }));
-    }
-
-    function restoreDisplaySettings() {
-      try {
-        const saved = JSON.parse(localStorage.getItem("phude-display-settings") || "null");
-        if (saved) {
-          document.getElementById("highlight-color").value = normalizeHexColor(saved.color);
-          document.getElementById("font-size-range").value = String(saved.size || 18);
-          document.getElementById("font-size-number").value = String(saved.size || 18);
-          if (saved.font) document.getElementById("font-family").value = saved.font;
-        }
-      } catch (_) {}
-      applyDisplaySettings();
-    }
-
-    function resetDisplaySettings() {
-      document.getElementById("highlight-color").value = "#dceeff";
-      document.getElementById("font-size-range").value = "18";
-      document.getElementById("font-size-number").value = "18";
-      document.getElementById("font-family").value = '"Inter", Arial, sans-serif';
-      applyDisplaySettings();
-    }
-
-    function keepPlayerInsideViewport() {
-      const rect = floatingPlayer.getBoundingClientRect();
-      let left = rect.left;
-      let top = rect.top;
-      if (rect.right > window.innerWidth - 4) left -= rect.right - window.innerWidth + 4;
-      if (rect.bottom > window.innerHeight - 4) top -= rect.bottom - window.innerHeight + 4;
-      left = Math.max(4, left);
-      top = Math.max(4, top);
-      floatingPlayer.style.left = `${left}px`;
-      floatingPlayer.style.top = `${top}px`;
-      floatingPlayer.style.right = "auto";
-      floatingPlayer.style.bottom = "auto";
-    }
-
-    function enablePlayerDragging() {
-      const handle = document.getElementById("drag-handle");
-      let dragging = false;
-      let offsetX = 0;
-      let offsetY = 0;
-
-      handle.addEventListener("pointerdown", event => {
-        if (event.target.closest("button")) return;
-        const rect = floatingPlayer.getBoundingClientRect();
-        dragging = true;
-        offsetX = event.clientX - rect.left;
-        offsetY = event.clientY - rect.top;
-        handle.setPointerCapture(event.pointerId);
-        floatingPlayer.style.right = "auto";
-        floatingPlayer.style.bottom = "auto";
-      });
-
-      handle.addEventListener("pointermove", event => {
-        if (!dragging) return;
-        const maxLeft = Math.max(4, window.innerWidth - floatingPlayer.offsetWidth - 4);
-        const maxTop = Math.max(4, window.innerHeight - floatingPlayer.offsetHeight - 4);
-        floatingPlayer.style.left = `${Math.min(maxLeft, Math.max(4, event.clientX - offsetX))}px`;
-        floatingPlayer.style.top = `${Math.min(maxTop, Math.max(4, event.clientY - offsetY))}px`;
-      });
-
-      const stop = event => {
-        dragging = false;
-        try { handle.releasePointerCapture(event.pointerId); } catch (_) {}
       };
-      handle.addEventListener("pointerup", stop);
-      handle.addEventListener("pointercancel", stop);
     }
+    return null;
+  }
 
-    sourceInput.addEventListener("change", () => {
-      const file = sourceInput.files[0];
-      document.getElementById("source-file-status").textContent = file ? `${file.name} · ${(file.size / 1024).toFixed(1)} KB` : "Chưa chọn file.";
-    });
+  function parsePosition(input) {
+    const value = String(input || "").trim().replace(",", ".");
+    if (!/^\d+(?::\d{1,2}){0,2}(?:\.\d{1,3})?$/.test(value)) return NaN;
+    const parts = value.split(":").map(Number);
+    if (!parts.every(Number.isFinite)) return NaN;
+    if (parts.length === 1) return parts[0];
+    if (parts.length === 2) return parts[0] * 60 + parts[1];
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  }
+  function formatPosition(value) {
+    const ms = Math.round(Math.max(0, value) * 1000);
+    const secs = Math.floor(ms / 1000);
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    const decimal = String(ms % 1000).padStart(3, "0");
+    return `${h ? `${String(h).padStart(2, "0")}:` : ""}${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}.${decimal}`;
+  }
 
-    vietnameseInput.addEventListener("change", () => {
-      const file = vietnameseInput.files[0];
-      document.getElementById("vi-file-status").textContent = file ? `${file.name} · ${(file.size / 1024).toFixed(1)} KB` : "Chưa chọn file.";
-    });
+  function getItems() {
+    return typeof transcriptItems !== "undefined" && Array.isArray(transcriptItems) ? transcriptItems : [];
+  }
 
-    localVideoInput.addEventListener("change", () => {
-      const file = localVideoInput.files[0];
-      document.getElementById("video-file-status").textContent = file ? `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MB` : "Chưa chọn video.";
-    });
+  function selectCue(index, changeMode = true) {
+    const cue = getItems()[index];
+    if (!cue || !Number.isFinite(cue.start) || !Number.isFinite(cue.end)) return false;
+    selectedIndex = index;
+    if (changeMode) modeInput.value = "cue";
+    startInput.value = formatPosition(cue.start);
+    endInput.value = formatPosition(cue.end);
+    selectedLabel.textContent = `Đã chọn câu ${index + 1}: ${cue.source || ""}`;
+    for (const row of knownRows) row.classList.toggle("lp-picked", Number(row.dataset.index) === index);
+    updateMode();
+    return true;
+  }
 
-    localVideo.addEventListener("error", () => {
-      const errorCode = localVideo.error?.code;
-      const message = errorCode === 4
-        ? "Trình duyệt không hỗ trợ định dạng hoặc codec của video này. Hãy thử MP4 H.264/AAC hoặc WebM."
-        : "Không thể mở video đã chọn.";
-      showStatus(message, "error");
-    });
+  function updateMode() {
+    const custom = modeInput.value === "custom";
+    startInput.disabled = !custom;
+    endInput.disabled = !custom;
+    if (custom) selectedLabel.textContent = "Chế độ mốc tùy chọn: sửa thời gian bắt đầu và kết thúc bên trên.";
+    else if (selectedIndex < 0) selectedLabel.textContent = "Chưa chọn câu phụ đề. Hãy nhấn vào một câu trong Script phụ đề.";
+    else {
+      const cue = getItems()[selectedIndex];
+      selectedLabel.textContent = cue ? `Đã chọn câu ${selectedIndex + 1}: ${cue.source || ""}` : "Chưa chọn câu phụ đề.";
+    }
+  }
 
-    document.getElementById("process-button").addEventListener("click", processSubtitleFiles);
-    document.getElementById("open-local-button").addEventListener("click", openLocalVideo);
-    document.getElementById("open-youtube-button").addEventListener("click", openYouTube);
-    document.getElementById("download-word-button").addEventListener("click", downloadWordScript);
-    document.getElementById("import-word-button").addEventListener("click", () => wordFileInput.click());
-    wordFileInput.addEventListener("change", () => importWordScript(wordFileInput.files[0]));
-    document.getElementById("close-player").addEventListener("click", () => floatingPlayer.classList.remove("show"));
+  function clearLoop({ pause = false, restoreSpeed = false } = {}) {
+    currentLoop = null;
+    const media = getMedia();
+    if (!media) return;
+    try {
+      if (pause) media.pause();
+      if (restoreSpeed) media.rate(1);
+    } catch (error) { console.warn("Không thể kết thúc lặp:", error); }
+  }
 
-    document.getElementById("highlight-color").addEventListener("input", applyDisplaySettings);
-    document.getElementById("font-family").addEventListener("change", applyDisplaySettings);
-    document.getElementById("font-size-range").addEventListener("input", event => {
-      document.getElementById("font-size-number").value = event.target.value;
-      applyDisplaySettings();
-    });
-    document.getElementById("font-size-number").addEventListener("input", event => {
-      document.getElementById("font-size-range").value = event.target.value;
-      applyDisplaySettings();
-    });
-    document.getElementById("reset-style-button").addEventListener("click", resetDisplaySettings);
+  function chooseRange() {
+    const items = getItems();
+    if (modeInput.value === "cue") {
+      if (selectedIndex < 0 || !items[selectedIndex]) {
+        const media = getMedia();
+        const now = media ? Number(media.time()) : 0;
+        const matched = items.findIndex((x) => now >= x.start && now <= x.end);
+        if (items.length && !selectCue(matched >= 0 ? matched : 0)) return null;
+      }
+      const cue = items[selectedIndex];
+      return cue ? { start: Number(cue.start), end: Number(cue.end), label: `câu ${selectedIndex + 1}` } : null;
+    }
+    return { start: parsePosition(startInput.value), end: parsePosition(endInput.value), label: "đoạn tự chọn" };
+  }
 
-    document.addEventListener("wheel", () => { suspendAutoScrollUntil = Date.now() + 3500; }, { passive: true });
-    window.addEventListener("resize", () => { if (floatingPlayer.classList.contains("show")) keepPlayerInsideViewport(); });
-    window.addEventListener("beforeunload", () => { if (localVideoObjectUrl) URL.revokeObjectURL(localVideoObjectUrl); });
+  function applySpeed(media, value) {
+    try {
+      const actual = Number(media.rate(value));
+      return Number.isFinite(actual) && actual > 0 ? actual : value;
+    } catch (error) {
+      status("Video hiện không cho phép chỉnh tốc độ phát.", true);
+      return null;
+    }
+  }
 
-    restoreDisplaySettings();
-    enablePlayerDragging();
-    startSyncTimer();
-  </script>
-</body>
-</html>
+  function startLoop() {
+    const media = getMedia();
+    if (!media) {
+      status("Hãy mở video trên máy hoặc đợi YouTube tải xong trước khi lặp.", true);
+      return;
+    }
+    const range = chooseRange();
+    if (!range || !Number.isFinite(range.start) || !Number.isFinite(range.end) || range.start < 0 || range.end <= range.start + 0.02) {
+      status("Mốc thời gian không hợp lệ. Điểm kết thúc phải lớn hơn điểm bắt đầu.", true);
+      return;
+    }
+    const repetitions = Number(repsInput.value);
+    if (!infiniteInput.checked && (!Number.isInteger(repetitions) || repetitions < 1 || repetitions > 9999)) {
+      status("Số lần lặp phải là số nguyên từ 1 đến 9999, hoặc chọn lặp vô hạn.", true);
+      return;
+    }
+    let end = range.end;
+    const duration = Number(media.duration());
+    if (Number.isFinite(duration) && duration > 0) {
+      if (range.start >= duration - 0.02) {
+        status("Điểm bắt đầu nằm ngoài thời lượng video.", true);
+        return;
+      }
+      end = Math.min(end, duration);
+    }
+    const speed = Number(speedInput.value);
+    clearLoop();
+    const actual = applySpeed(media, speed);
+    if (actual === null) return;
+    currentLoop = {
+      kind: media.kind, start: range.start, end, label: range.label,
+      repetitions: infiniteInput.checked ? Infinity : repetitions,
+      completed: 0, actualSpeed: actual,
+      lastSeekAt: performance.now()
+    };
+    try {
+      media.seek(range.start);
+      media.play();
+    } catch (error) {
+      clearLoop({ restoreSpeed: true });
+      status("Không thể bắt đầu lặp. Hãy bật video trước rồi thử lại.", true);
+      return;
+    }
+    const speedNote = Math.abs(actual - speed) > 0.001 ? ` (video chỉ hỗ trợ ${actual}×)` : "";
+    status(`Đang phát ${range.label} từ ${formatPosition(range.start)} đến ${formatPosition(end)} ở ${actual}×${speedNote}. Lần 1/${infiniteInput.checked ? "∞" : repetitions}.`);
+  }
+
+  function tick() {
+    const loop = currentLoop;
+    if (!loop) return;
+    const media = getMedia();
+    if (!media || media.kind !== loop.kind) {
+      clearLoop({ restoreSpeed: true });
+      status("Đã dừng lặp vì bạn đổi nguồn phát video.");
+      return;
+    }
+    if (performance.now() - loop.lastSeekAt < 110) return;
+    let now;
+    try { now = Number(media.time()); } catch (_) { return; }
+    if (!Number.isFinite(now) || now < loop.end - 0.035) return;
+    loop.completed += 1;
+    if (loop.completed >= loop.repetitions) {
+      clearLoop({ pause: true, restoreSpeed: true });
+      status(`✓ Hoàn thành ${loop.completed}/${loop.repetitions} lần phát ${loop.label}. Video đã tạm dừng và tốc độ trở về 1×.`);
+      return;
+    }
+    loop.lastSeekAt = performance.now();
+    try { media.seek(loop.start); media.play(); }
+    catch (_) {
+      clearLoop({ restoreSpeed: true });
+      status("Lặp bị gián đoạn do trình phát video.", true);
+      return;
+    }
+    status(`Đang lặp ${loop.label} · Lần ${loop.completed + 1}/${loop.repetitions === Infinity ? "∞" : loop.repetitions} · Tốc độ ${loop.actualSpeed}×`);
+  }
+
+  function refreshRows() {
+    const rows = Array.from(transcriptEl.querySelectorAll(".cue-row"));
+    const changed = rows.length !== knownRows.length || rows.some((row, i) => row !== knownRows[i]);
+    if (changed) {
+      if (knownRows.length > 0 && currentLoop) {
+        clearLoop({ restoreSpeed: true });
+        status("Danh sách phụ đề đã đổi; đã dừng đoạn lặp cũ.");
+      }
+      selectedIndex = -1;
+      knownRows = rows;
+      updateMode();
+    }
+    for (const row of rows) {
+      if (row.querySelector(".lp-cue-button")) continue;
+      const time = row.querySelector(".cue-time");
+      if (!time) continue;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "lp-cue-button";
+      button.textContent = "↻ Lặp";
+      button.title = "Phát và lặp riêng câu này theo tốc độ và số lần đã chọn";
+      button.setAttribute("aria-label", `Lặp câu ${Number(row.dataset.index) + 1}`);
+      time.appendChild(button);
+    }
+  }
+
+  // Bat su kien capture: nut Lap khong lam chay handler 'tua cau' cua trang cu.
+  transcriptEl.addEventListener("click", (event) => {
+    const button = event.target.closest(".lp-cue-button");
+    if (button) {
+      event.preventDefault();
+      event.stopPropagation();
+      const row = button.closest(".cue-row");
+      if (row && selectCue(Number(row.dataset.index))) startLoop();
+      return;
+    }
+    const row = event.target.closest(".cue-row");
+    if (!row) return;
+    if (currentLoop) clearLoop({ restoreSpeed: true });
+    selectCue(Number(row.dataset.index));
+    if (autoInput.checked) {
+      event.preventDefault();
+      event.stopPropagation();
+      startLoop();
+    }
+  }, true);
+
+  transcriptEl.addEventListener("keydown", (event) => {
+    if (![" ", "Enter"].includes(event.key) || event.target.closest(".lp-cue-button")) return;
+    const row = event.target.closest(".cue-row");
+    if (!row) return;
+    if (currentLoop) clearLoop({ restoreSpeed: true });
+    selectCue(Number(row.dataset.index));
+    if (autoInput.checked) {
+      event.preventDefault();
+      event.stopPropagation();
+      startLoop();
+    }
+  }, true);
+
+  modeInput.addEventListener("change", updateMode);
+  infiniteInput.addEventListener("change", () => { repsInput.disabled = infiniteInput.checked; });
+  $("lp-play").addEventListener("click", startLoop);
+  $("lp-stop").addEventListener("click", () => {
+    clearLoop({ pause: true, restoreSpeed: true });
+    status("Đã dừng lặp, tạm dừng video và đưa tốc độ về 1×.");
+  });
+  $("lp-apply").addEventListener("click", () => {
+    const media = getMedia();
+    if (!media) { status("Hãy mở video trên máy hoặc YouTube trước khi chỉnh tốc độ.", true); return; }
+    clearLoop();
+    const actual = applySpeed(media, Number(speedInput.value));
+    if (actual !== null) status(`Đã đặt tốc độ ${actual}× cho video đang phát (không giới hạn đoạn).`);
+  });
+  $("lp-normal").addEventListener("click", () => {
+    clearLoop({ restoreSpeed: true });
+    speedInput.value = "1";
+    status("Đã hủy lặp và khôi phục tốc độ phát bình thường 1×.");
+  });
+
+  // Neu doi video, khong de che do lap cu anh huong video moi.
+  for (const id of ["open-local-button", "open-youtube-button"]) {
+    $(id)?.addEventListener("click", () => {
+      clearLoop({ restoreSpeed: true });
+      status("Đã đổi video; bạn có thể chọn câu hoặc đoạn để luyện nghe.");
+    }, true);
+  }
+  localEl.addEventListener("timeupdate", tick);
+  localEl.addEventListener("ended", () => { if (currentLoop) tick(); });
+  const observer = new MutationObserver(refreshRows);
+  observer.observe(transcriptEl, { childList: true, subtree: true });
+  refreshRows();
+  intervalId = window.setInterval(tick, 80); // Can thiet cho YouTube iframe, khong co timeupdate.
+  window.addEventListener("pagehide", () => { window.clearInterval(intervalId); observer.disconnect(); });
+})();
